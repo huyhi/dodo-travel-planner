@@ -15,7 +15,7 @@ export default () => {
       }}>
         <RocketOutlined style={{ fontSize: '48px', marginBottom: '20px' }} />
         <Title level={1} style={{ color: 'white', margin: '0 0 16px 0' }}>
-          🦤 Dodo Bird 旅行规划 🦤
+          🦤 Dodo Bird 旅行规划助手 🦤
         </Title>
       </div>
     </>

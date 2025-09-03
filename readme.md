@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🦤 Dudu 旅行规划助手 🦤
+# 🦤 Dodo 旅行规划助手 🦤
 
 ![Status](https://img.shields.io/badge/Status-🚀%20Active-brightgreen)
 ![Version](https://img.shields.io/badge/Version-0.1.0-blue)
