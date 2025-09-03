@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useRef } from 'react'
 import {
   Card,
   Form,
@@ -23,6 +23,9 @@ import {
   LoadingOutlined,
   StopOutlined,
 } from '@ant-design/icons'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
 import Banner from './components/Banner'
 import { useTravelApi } from './hooks/useTravelApi'
 import { TravelRequest } from './services/apiService'
@@ -42,6 +45,7 @@ interface FormData {
 
 export default () => {
   const [form] = Form.useForm()
+  const resultRef = useRef<HTMLDivElement>(null)
   const {
     loading,
     streaming,
@@ -67,6 +71,17 @@ export default () => {
       others: values.specialRequirements || ''
     }
 
+    // 立即滚动到结果显示区域
+    setTimeout(() => {
+      if (resultRef.current) {
+        resultRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }
+    }, 100)
+
+    // 发送请求
     await sendTravelRequest(requestData)
   }
 
@@ -208,8 +223,9 @@ export default () => {
         </Card>
 
         {/* 结果显示部分 */}
-        {(streamContent || streaming) && (
+        {(streamContent || streaming || loading) && (
           <Card
+            ref={resultRef}
             style={{ marginTop: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
             styles={{ body: { padding: '40px' } }}
           >
@@ -235,17 +251,163 @@ export default () => {
                 border: '1px solid #e9ecef',
                 minHeight: '200px',
                 fontFamily: 'inherit',
-                lineHeight: '1.6',
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word'
+                lineHeight: '1.6'
               }}
             >
-              {streamContent || '正在生成旅行计划...'}
+              {streamContent ? (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeHighlight]}
+                  components={{
+                    // 自定义样式
+                    h1: ({ children }) => (
+                      <h1 style={{
+                        color: '#1890ff',
+                        borderBottom: '2px solid #1890ff',
+                        paddingBottom: '8px',
+                        marginBottom: '16px',
+                        fontSize: '24px'
+                      }}>
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 style={{
+                        color: '#52c41a',
+                        marginTop: '24px',
+                        marginBottom: '12px',
+                        fontSize: '20px'
+                      }}>
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 style={{
+                        color: '#fa8c16',
+                        marginTop: '20px',
+                        marginBottom: '10px',
+                        fontSize: '18px'
+                      }}>
+                        {children}
+                      </h3>
+                    ),
+                    p: ({ children }) => (
+                      <p style={{ marginBottom: '12px', fontSize: '16px' }}>
+                        {children}
+                      </p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul style={{ marginBottom: '16px', paddingLeft: '20px' }}>
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol style={{ marginBottom: '16px', paddingLeft: '20px' }}>
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li style={{ marginBottom: '6px', fontSize: '16px' }}>
+                        {children}
+                      </li>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote style={{
+                        borderLeft: '4px solid #1890ff',
+                        paddingLeft: '16px',
+                        margin: '16px 0',
+                        backgroundColor: '#f0f8ff',
+                        padding: '12px 16px',
+                        borderRadius: '4px'
+                      }}>
+                        {children}
+                      </blockquote>
+                    ),
+                    code: ({ children, className }) => {
+                      const isInline = !className
+                      return isInline ? (
+                        <code style={{
+                          backgroundColor: '#f5f5f5',
+                          padding: '2px 6px',
+                          borderRadius: '3px',
+                          fontSize: '14px',
+                          fontFamily: 'Monaco, Consolas, "Courier New", monospace'
+                        }}>
+                          {children}
+                        </code>
+                      ) : (
+                        <code className={className}>
+                          {children}
+                        </code>
+                      )
+                    },
+                    pre: ({ children }) => (
+                      <pre style={{
+                        backgroundColor: '#f5f5f5',
+                        padding: '16px',
+                        borderRadius: '6px',
+                        overflow: 'auto',
+                        margin: '16px 0',
+                        fontSize: '14px',
+                        fontFamily: 'Monaco, Consolas, "Courier New", monospace'
+                      }}>
+                        {children}
+                      </pre>
+                    ),
+                    table: ({ children }) => (
+                      <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        margin: '16px 0',
+                        fontSize: '14px'
+                      }}>
+                        {children}
+                      </table>
+                    ),
+                    th: ({ children }) => (
+                      <th style={{
+                        border: '1px solid #d9d9d9',
+                        padding: '8px 12px',
+                        backgroundColor: '#fafafa',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                      }}>
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td style={{
+                        border: '1px solid #d9d9d9',
+                        padding: '8px 12px'
+                      }}>
+                        {children}
+                      </td>
+                    ),
+                    strong: ({ children }) => (
+                      <strong style={{ color: '#1890ff', fontWeight: 'bold' }}>
+                        {children}
+                      </strong>
+                    ),
+                    em: ({ children }) => (
+                      <em style={{ color: '#52c41a', fontStyle: 'italic' }}>
+                        {children}
+                      </em>
+                    )
+                  }}
+                >
+                  {streamContent}
+                </ReactMarkdown>
+              ) : (
+                <div style={{ fontSize: '16px', color: '#666' }}>
+                  正在生成旅行计划...
+                </div>
+              )}
               {streaming && (
                 <span style={{
                   animation: 'blink 1s infinite',
                   color: '#1890ff',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  marginLeft: '4px'
                 }}>
                   ▋
                 </span>
