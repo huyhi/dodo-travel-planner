@@ -17,6 +17,8 @@ dependencies = [
     "aiofiles>=23.0.0",
     "typing-extensions>=4.8.0",
     "python-dotenv>=1.0.0",
+    "langchain>=0.3.27",
+    "langchain-openai>=0.2.0",
 ]
 
 [project.optional-dependencies]

@@ -2,44 +2,43 @@
 Travel Chat API Router
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
-from app.models.http_entity import TravelChatRequest
 from app.promopt.travel_plan import TRAVEL_PLAN_PROMPT
-from app.services.aiq import run_workflow_stream
-from app.config import aiq_workflow_config_path
+from app.services.lang import lang_chain_service
 
 router = APIRouter(
     prefix="/travel",
     tags=["travel"],
 )
 
-@router.post("/chat")
-async def travel_chat(request: TravelChatRequest):
-
+@router.get("/chat")
+async def travel_chat(
+    from_place: str = Query(..., description="出发地点"),
+    to_place: str = Query(..., description="目的地"),
+    from_date: str = Query(..., description="出发日期"),
+    to_date: str = Query(..., description="返回日期"),
+    people_num: int = Query(..., description="人数"),
+    others: str = Query("", description="其他要求")
+):
     prompt = TRAVEL_PLAN_PROMPT.format(
-        from_place=request.from_place,
-        to_place=request.to_place,
-        from_date=request.from_date,
-        to_date=request.to_date,
-        people_num=request.people_num,
-        others=request.others
+        from_place=from_place,
+        to_place=to_place,
+        from_date=from_date,
+        to_date=to_date,
+        people_num=people_num,
+        others=others
     )
 
     """Stream chat response for travel planning"""
-    async def generate():
-        async for chunk in run_workflow_stream(
-            config_file=aiq_workflow_config_path,
-            input_str=prompt
-        ):
-            yield chunk
-    
     return StreamingResponse(
-        generate(),
+        lang_chain_service.streaming_chat(prompt),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Content-Type-Options": "nosniff"
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control",
+            "X-Accel-Buffering": "no"  # 禁用nginx缓冲
         }
     )

@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'darwin'",
@@ -576,6 +576,8 @@ dependencies = [
     { name = "aiofiles" },
     { name = "fastapi" },
     { name = "httpx" },
+    { name = "langchain" },
+    { name = "langchain-openai" },
     { name = "nvidia-nat", extra = ["all"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -596,6 +598,8 @@ requires-dist = [
     { name = "aiofiles", specifier = ">=23.0.0" },
     { name = "fastapi", specifier = ">=0.104.1" },
     { name = "httpx", specifier = ">=0.25.0" },
+    { name = "langchain", specifier = ">=0.3.27" },
+    { name = "langchain-openai", specifier = ">=0.2.0" },
     { name = "nvidia-nat", extras = ["all"], specifier = ">=1.2.1" },
     { name = "pydantic", specifier = ">=2.5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },

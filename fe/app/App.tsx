@@ -1,39 +1,16 @@
 'use client'
 
-import React, { useRef } from 'react'
-import {
-  Card,
-  Form,
-  Input,
-  Button,
-  DatePicker,
-  InputNumber,
-  Space,
-  Typography,
-  Row,
-  Col,
-  Spin,
-  Divider,
-} from 'antd'
-import {
-  EnvironmentOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  SendOutlined,
-  LoadingOutlined,
-  StopOutlined,
-} from '@ant-design/icons'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
+import React, { useRef, useState, useEffect } from 'react'
+import { Card, Spin, Alert, Typography } from 'antd'
 import Banner from './components/Banner'
-import { useTravelApi } from './hooks/useTravelApi'
-import { TravelRequest } from './services/apiService'
+import TravelForm from './components/TravelForm'
+import MarkdownContent from './components/MarkdownContent'
+import { TravelRequest } from './models/http-model'
+import { sseService } from './services/sseService'
+import { processStreamingText } from './utils/textUtils'
 import dayjs from 'dayjs'
 
-const { Title, Paragraph } = Typography
-const { TextArea } = Input
-const { RangePicker } = DatePicker
+const { Title } = Typography
 
 interface FormData {
   startLocation: string
@@ -44,19 +21,27 @@ interface FormData {
 }
 
 export default () => {
-  const [form] = Form.useForm()
   const resultRef = useRef<HTMLDivElement>(null)
-  const {
-    loading,
-    streaming,
-    streamContent,
-    isCompleted,
-    sendTravelRequest,
-    stopStreaming,
-    resetPlan
-  } = useTravelApi()
+  const [isLoading, setIsLoading] = useState(false)
+  const [travelPlan, setTravelPlan] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  // 组件卸载时关闭 EventSource 连接
+  useEffect(() => {
+    return () => {
+      sseService.closeConnection()
+    }
+  }, [])
 
   const onFinish = async (values: FormData) => {
+    // 重置状态
+    setIsLoading(true)
+    setTravelPlan('')
+    setError(null)
+
+    // 先关闭之前的 EventSource 连接
+    sseService.closeConnection()
+
     // 格式化日期
     const fromDate = values.dateRange[0] ? dayjs(values.dateRange[0]).format('YYYY-MM-DD') : ''
     const toDate = values.dateRange[1] ? dayjs(values.dateRange[1]).format('YYYY-MM-DD') : ''
@@ -81,356 +66,266 @@ export default () => {
       }
     }, 100)
 
-    // 发送请求
-    await sendTravelRequest(requestData)
+    // 根据选择使用不同的 SSE 方案
+    try {
+      sseService.streamTravelPlanWithEventSource(
+        requestData,
+        (chunk: string) => {
+          // 使用高级文本处理功能
+          setTravelPlan(prev => processStreamingText(chunk, prev))
+        },
+        () => {
+          setIsLoading(false)
+        },
+        (error: Error) => {
+          setError(error.message)
+          setIsLoading(false)
+        }
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '发生未知错误')
+      setIsLoading(false)
+    }
   }
 
-  const handleResetPlan = () => {
-    resetPlan()
-    form.resetFields()
-  }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-
+    <div className="app-container">
       <Banner />
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-        {/* 输入表单部分 */}
-        <Card
-          style={{ marginBottom: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-          styles={{ body: { padding: '40px' } }}
-        >
-          <Title level={3} style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <EnvironmentOutlined /> 开始规划您的旅程
-          </Title>
+      <main className="main-content">
+        <TravelForm onFinish={onFinish} />
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            requiredMark={false}
-          >
-            <Row gutter={24}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="出发地点"
-                  name="startLocation"
-                  rules={[{ required: true, message: '请输入出发地点' }]}
-                >
-                  <Input
-                    prefix={<EnvironmentOutlined />}
-                    placeholder="例如：北京"
-                    size="large"
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="目的地"
-                  name="destination"
-                  rules={[{ required: true, message: '请输入目的地' }]}
-                >
-                  <Input
-                    prefix={<EnvironmentOutlined />}
-                    placeholder="例如：京都"
-                    size="large"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+        {(isLoading || travelPlan || error) && (
+          <div ref={resultRef} className="result-section">
+            <Card className="result-card" styles={{ body: { padding: '48px' } }}>
+              <div className="result-header">
+                <div className="result-icon">🗺️</div>
+                <Title level={2} className="result-title">
+                  您的专属旅行计划
+                </Title>
+                <p className="result-description">
+                  AI 为您精心制定的个性化旅行方案
+                </p>
+              </div>
 
-            <Row gutter={24}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="出行日期"
-                  name="dateRange"
-                  rules={[{ required: true, message: '请选择出行日期' }]}
-                >
-                  <RangePicker
-                    prefix={<CalendarOutlined />}
-                    placeholder={['出发日期', '返回日期']}
-                    size="large"
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  label="出行人数"
-                  name="numberOfPeople"
-                  rules={[{ required: true, message: '请输入出行人数' }]}
-                >
-                  <InputNumber
-                    prefix={<UserOutlined />}
-                    placeholder="出行人数"
-                    min={1}
-                    max={20}
-                    size="large"
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item
-              label="特殊需求及偏好"
-              name="specialRequirements"
-            >
-              <TextArea
-                placeholder="请描述您的特殊需求，如：预算范围、兴趣爱好、饮食要求、住宿偏好等..."
-                rows={4}
-                size="large"
-              />
-            </Form.Item>
-
-            <Form.Item style={{ textAlign: 'center', marginTop: '30px' }}>
-              <Space size="middle">
-                {!streaming ? (
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={loading}
-                    icon={<SendOutlined />}
-                    size="large"
-                    style={{ minWidth: '120px' }}
-                  >
-                    {loading ? '连接中...' : '开始规划'}
-                  </Button>
-                ) : (
-                  <Button
-                    type="primary"
-                    onClick={stopStreaming}
-                    icon={<StopOutlined />}
-                    size="large"
-                    style={{ minWidth: '120px' }}
-                    danger
-                  >
-                    停止生成
-                  </Button>
-                )}
-                {(streamContent || isCompleted) && (
-                  <Button
-                    onClick={handleResetPlan}
-                    size="large"
-                  >
-                    重新规划
-                  </Button>
-                )}
-              </Space>
-            </Form.Item>
-          </Form>
-        </Card>
-
-        {/* 结果显示部分 */}
-        {(streamContent || streaming || loading) && (
-          <Card
-            ref={resultRef}
-            style={{ marginTop: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-            styles={{ body: { padding: '40px' } }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-              <Title level={3} style={{ margin: 0, flex: 1 }}>
-                🤖 AI 旅行规划结果
-              </Title>
-              {streaming && (
-                <Spin
-                  indicator={<LoadingOutlined style={{ fontSize: 20 }} spin />}
-                  style={{ marginLeft: '10px' }}
+              {error && (
+                <Alert
+                  message="生成旅行计划时发生错误"
+                  description={error}
+                  type="error"
+                  showIcon
+                  className="error-alert"
                 />
               )}
-            </div>
 
-            <Divider />
-
-            <div
-              style={{
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                padding: '20px',
-                border: '1px solid #e9ecef',
-                minHeight: '200px',
-                fontFamily: 'inherit',
-                lineHeight: '1.6'
-              }}
-            >
-              {streamContent ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight]}
-                  components={{
-                    // 自定义样式
-                    h1: ({ children }) => (
-                      <h1 style={{
-                        color: '#1890ff',
-                        borderBottom: '2px solid #1890ff',
-                        paddingBottom: '8px',
-                        marginBottom: '16px',
-                        fontSize: '24px'
-                      }}>
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 style={{
-                        color: '#52c41a',
-                        marginTop: '24px',
-                        marginBottom: '12px',
-                        fontSize: '20px'
-                      }}>
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 style={{
-                        color: '#fa8c16',
-                        marginTop: '20px',
-                        marginBottom: '10px',
-                        fontSize: '18px'
-                      }}>
-                        {children}
-                      </h3>
-                    ),
-                    p: ({ children }) => (
-                      <p style={{ marginBottom: '12px', fontSize: '16px' }}>
-                        {children}
-                      </p>
-                    ),
-                    ul: ({ children }) => (
-                      <ul style={{ marginBottom: '16px', paddingLeft: '20px' }}>
-                        {children}
-                      </ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol style={{ marginBottom: '16px', paddingLeft: '20px' }}>
-                        {children}
-                      </ol>
-                    ),
-                    li: ({ children }) => (
-                      <li style={{ marginBottom: '6px', fontSize: '16px' }}>
-                        {children}
-                      </li>
-                    ),
-                    blockquote: ({ children }) => (
-                      <blockquote style={{
-                        borderLeft: '4px solid #1890ff',
-                        paddingLeft: '16px',
-                        margin: '16px 0',
-                        backgroundColor: '#f0f8ff',
-                        padding: '12px 16px',
-                        borderRadius: '4px'
-                      }}>
-                        {children}
-                      </blockquote>
-                    ),
-                    code: ({ children, className }) => {
-                      const isInline = !className
-                      return isInline ? (
-                        <code style={{
-                          backgroundColor: '#f5f5f5',
-                          padding: '2px 6px',
-                          borderRadius: '3px',
-                          fontSize: '14px',
-                          fontFamily: 'Monaco, Consolas, "Courier New", monospace'
-                        }}>
-                          {children}
-                        </code>
-                      ) : (
-                        <code className={className}>
-                          {children}
-                        </code>
-                      )
-                    },
-                    pre: ({ children }) => (
-                      <pre style={{
-                        backgroundColor: '#f5f5f5',
-                        padding: '16px',
-                        borderRadius: '6px',
-                        overflow: 'auto',
-                        margin: '16px 0',
-                        fontSize: '14px',
-                        fontFamily: 'Monaco, Consolas, "Courier New", monospace'
-                      }}>
-                        {children}
-                      </pre>
-                    ),
-                    table: ({ children }) => (
-                      <table style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        margin: '16px 0',
-                        fontSize: '14px'
-                      }}>
-                        {children}
-                      </table>
-                    ),
-                    th: ({ children }) => (
-                      <th style={{
-                        border: '1px solid #d9d9d9',
-                        padding: '8px 12px',
-                        backgroundColor: '#fafafa',
-                        fontWeight: 'bold',
-                        textAlign: 'left'
-                      }}>
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td style={{
-                        border: '1px solid #d9d9d9',
-                        padding: '8px 12px'
-                      }}>
-                        {children}
-                      </td>
-                    ),
-                    strong: ({ children }) => (
-                      <strong style={{ color: '#1890ff', fontWeight: 'bold' }}>
-                        {children}
-                      </strong>
-                    ),
-                    em: ({ children }) => (
-                      <em style={{ color: '#52c41a', fontStyle: 'italic' }}>
-                        {children}
-                      </em>
-                    )
-                  }}
-                >
-                  {streamContent}
-                </ReactMarkdown>
-              ) : (
-                <div style={{ fontSize: '16px', color: '#666' }}>
-                  正在生成旅行计划...
+              {isLoading && (
+                <div className="loading-container">
+                  <div className="loading-animation">
+                    <Spin size="large" />
+                  </div>
+                  <div className="loading-text">
+                    正在为您生成专属旅行计划，请稍候...
+                    <span className="typing-cursor">|</span>
+                  </div>
+                  <div className="loading-steps">
+                    <div className="step active">🔍 分析您的需求</div>
+                    <div className="step active">🌍 搜索最佳路线</div>
+                    <div className="step active">✨ 生成个性化方案</div>
+                  </div>
                 </div>
               )}
-              {streaming && (
-                <span style={{
-                  animation: 'blink 1s infinite',
-                  color: '#1890ff',
-                  fontSize: '16px',
-                  marginLeft: '4px'
-                }}>
-                  ▋
-                </span>
-              )}
-            </div>
 
-            {isCompleted && (
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                <Paragraph style={{ color: '#52c41a', margin: 0 }}>
-                  ✅ 旅行规划已完成！
-                </Paragraph>
-              </div>
-            )}
-          </Card>
+              {travelPlan && (
+                <div className="travel-plan-content">
+                  <MarkdownContent content={travelPlan} />
+                  {isLoading && (
+                    <div className="streaming-cursor" />
+                  )}
+                </div>
+              )}
+            </Card>
+          </div>
         )}
-      </div>
+      </main>
 
       <style jsx>{`
+        .app-container {
+          min-height: 100vh;
+          background: var(--background);
+        }
+        
+        .main-content {
+          padding: 40px 0 80px 0;
+          background: var(--background);
+        }
+        
+        .result-section {
+          max-width: 1000px;
+          margin: 40px auto 0;
+          padding: 0 20px;
+        }
+        
+        .result-card {
+          border-radius: 16px !important;
+          box-shadow: 0 8px 32px rgba(102, 126, 234, 0.08) !important;
+          border: 1px solid rgba(102, 126, 234, 0.1) !important;
+          background: var(--card-background) !important;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        
+        .result-card:hover {
+          box-shadow: 0 12px 48px rgba(102, 126, 234, 0.12) !important;
+        }
+        
+        .result-header {
+          text-align: center;
+          margin-bottom: 32px;
+        }
+        
+        .result-icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+          display: inline-block;
+          animation: bounce 2s ease-in-out infinite;
+        }
+        
+        .result-title {
+          margin: 0 !important;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          font-weight: 700 !important;
+        }
+        
+        .result-description {
+          color: #666;
+          font-size: 16px;
+          margin: 16px 0 0 0;
+          line-height: 1.6;
+        }
+        
+        .error-alert {
+          border-radius: 8px !important;
+          margin-bottom: 24px !important;
+        }
+        
+        .loading-container {
+          text-align: center;
+          padding: 60px 0;
+        }
+        
+        .loading-animation {
+          margin-bottom: 24px;
+        }
+        
+        .loading-animation :global(.ant-spin-dot) {
+          font-size: 32px !important;
+        }
+        
+        .loading-animation :global(.ant-spin-dot-item) {
+          background-color: #667eea !important;
+        }
+        
+        .loading-text {
+          font-size: 18px;
+          color: #666;
+          margin-bottom: 32px;
+          font-weight: 500;
+        }
+        
+        .loading-steps {
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+          flex-wrap: wrap;
+        }
+        
+        .step {
+          padding: 12px 20px;
+          background: rgba(102, 126, 234, 0.1);
+          border-radius: 20px;
+          color: #667eea;
+          font-size: 14px;
+          font-weight: 500;
+          border: 1px solid rgba(102, 126, 234, 0.2);
+          opacity: 0.6;
+          transition: all 0.3s ease;
+        }
+        
+        .step.active {
+          opacity: 1;
+          background: rgba(102, 126, 234, 0.15);
+          transform: scale(1.05);
+        }
+        
+        .travel-plan-content {
+          background: var(--card-background);
+          padding: 32px;
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+          position: relative;
+        }
+        
+        .streaming-cursor {
+          display: inline-block;
+          width: 3px;
+          height: 20px;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          animation: blink 1s infinite;
+          margin-left: 4px;
+          border-radius: 2px;
+        }
+        
+        .typing-cursor {
+          animation: blink 1s infinite;
+          font-weight: bold;
+          color: #667eea;
+        }
+        
         @keyframes blink {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
         }
+        
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-10px); }
+          60% { transform: translateY(-5px); }
+        }
+        
+        @media (max-width: 768px) {
+          .main-content {
+            padding: 24px 0 60px 0;
+          }
+          
+          .result-section {
+            margin-top: 24px;
+            padding: 0 16px;
+          }
+          
+          .result-icon {
+            font-size: 36px;
+          }
+          
+          .loading-container {
+            padding: 40px 0;
+          }
+          
+          .loading-steps {
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+          }
+          
+          .travel-plan-content {
+            padding: 24px;
+          }
+        }
       `}</style>
-    </div>
+    </div >
   )
 }
