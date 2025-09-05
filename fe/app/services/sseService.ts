@@ -1,5 +1,5 @@
 import { TravelRequest } from '../models/http-model'
-import { processSSEChunk } from '../utils/textUtils'
+import { processSseDataChunk } from '../utils/textUtils'
 
 /**
  * 纯 EventSource 实现的 SSE 服务
@@ -49,7 +49,7 @@ export class SSEService {
           onError(new Error(event.data.substring(7).trim()))
         } else {
           // 使用工具函数处理 SSE 数据块
-          const processedData = processSSEChunk(event.data)
+          const processedData = processSseDataChunk(event.data)
           onChunk(processedData)
         }
       }
@@ -109,7 +109,7 @@ export function createSimpleSSEConnection(
       onComplete()
     } else {
       // 使用工具函数处理数据
-      const processedData = processSSEChunk(event.data)
+      const processedData = processSseDataChunk(event.data)
       onMessage(processedData)
     }
   }

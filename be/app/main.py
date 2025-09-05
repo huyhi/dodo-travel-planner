@@ -2,14 +2,14 @@
 Alternative main entry point using modular structure
 This is an alternative to main.py that shows how to organize the code with routers
 """
+# load env first 
+from dotenv import load_dotenv
+load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import travel
 
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Create FastAPI app instance
 app = FastAPI(

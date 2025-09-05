@@ -33,6 +33,15 @@
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-xl: 16px;
+
+  /* Form specific variables */
+  --form-input-border: 2px solid var(--border-color);
+  --form-input-border-hover: 2px solid var(--primary-color);
+  --form-input-border-focus: 2px solid var(--primary-color);
+  --form-input-shadow-hover: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  --form-input-shadow-focus: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  --form-gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  --form-gradient-hover: linear-gradient(135deg, var(--primary-hover), #6b4190);
 }
 
 @media (prefers-color-scheme: dark) {

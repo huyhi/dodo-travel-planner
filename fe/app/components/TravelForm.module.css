@@ -1,0 +1,124 @@
+/* TravelForm CSS Modules */
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.card {
+    border-radius: var(--border-radius-xl) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.08) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    background: var(--card-background) !important;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+    box-shadow: 0 12px 48px rgba(102, 126, 234, 0.12) !important;
+    transform: translateY(-2px);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.title {
+    margin: 0 !important;
+    background: var(--form-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700 !important;
+}
+
+.form {
+    /* Form container styles are handled by Antd */
+}
+
+.formItem {
+    margin-bottom: var(--spacing-lg) !important;
+}
+
+.label {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* Input field styles */
+.input,
+.textarea,
+.datePicker,
+.numberInput {
+    border-radius: var(--border-radius-md) !important;
+    border: var(--form-input-border) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.input:hover,
+.textarea:hover,
+.datePicker:hover,
+.numberInput:hover {
+    border: var(--form-input-border-hover) !important;
+    box-shadow: var(--form-input-shadow-hover) !important;
+}
+
+.input:focus,
+.input.ant-input-focused,
+.textarea:focus,
+.textarea.ant-input-focused,
+.datePicker.ant-picker-focused,
+.numberInput.ant-input-number-focused {
+    border: var(--form-input-border-focus) !important;
+    box-shadow: var(--form-input-shadow-focus) !important;
+}
+
+.submitContainer {
+    text-align: center !important;
+    margin-top: 40px !important;
+}
+
+.submitButton {
+    background: var(--form-gradient) !important;
+    border: none !important;
+    border-radius: var(--border-radius-lg) !important;
+    height: 48px !important;
+    padding: 0 var(--spacing-xl) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    min-width: 200px !important;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.submitButton:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4) !important;
+    background: var(--form-gradient-hover) !important;
+}
+
+.submitButton:active {
+    transform: translateY(0) !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+
+    .header {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .submitButton {
+        width: 100% !important;
+        min-width: auto !important;
+    }
+}

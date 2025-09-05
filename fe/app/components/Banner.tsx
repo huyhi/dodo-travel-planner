@@ -13,10 +13,6 @@ export default () => {
             🦤 Dodo Bird 旅行规划助手🦤
           </Title>
 
-          <Text className="banner-subtitle">
-            用AI智能规划您的完美旅程，让每一次出行都成为美好回忆
-          </Text>
-
           <div className="banner-features">
             <div className="feature-item">
               <CompassOutlined />

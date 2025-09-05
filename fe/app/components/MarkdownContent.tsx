@@ -2,106 +2,150 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
 
-export default ({ content }: { content: string }) => {
+interface MarkdownContentProps {
+  content: string;
+  height?: string | number;
+  className?: string;
+}
+
+export default ({ content, height = 600, className = '' }: MarkdownContentProps) => {
+  const containerHeight = typeof height === 'number' ? `${height}px` : height;
+
   return (
-    <div className="markdown-wrapper markdown-content-enhanced">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={{
-          // 现代化自定义样式
-          h1: ({ children }) => (
-            <h1 className="md-h1">
-              {children}
-            </h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="md-h2">
-              {children}
-            </h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="md-h3">
-              {children}
-            </h3>
-          ),
-          p: ({ children }) => (
-            <p className="md-p">
-              {children}
-            </p>
-          ),
-          ul: ({ children }) => (
-            <ul className="md-ul">
-              {children}
-            </ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="md-ol">
-              {children}
-            </ol>
-          ),
-          li: ({ children }) => (
-            <li className="md-li">
-              {children}
-            </li>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="md-blockquote">
-              {children}
-            </blockquote>
-          ),
-          code: ({ children, className }) => {
-            const isInline = !className
-            return isInline ? (
-              <code className="md-inline-code">
+    <div
+      className={`markdown-scroll-container ${className}`}
+      style={{ height: containerHeight }}
+    >
+      <div className="markdown-wrapper markdown-content-enhanced">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
+          components={{
+            // 现代化自定义样式
+            h1: ({ children }) => (
+              <h1 className="md-h1">
                 {children}
-              </code>
-            ) : (
-              <code className={className}>
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="md-h2">
                 {children}
-              </code>
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="md-h3">
+                {children}
+              </h3>
+            ),
+            p: ({ children }) => (
+              <p className="md-p">
+                {children}
+              </p>
+            ),
+            ul: ({ children }) => (
+              <ul className="md-ul">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="md-ol">
+                {children}
+              </ol>
+            ),
+            li: ({ children }) => (
+              <li className="md-li">
+                {children}
+              </li>
+            ),
+            blockquote: ({ children }) => (
+              <blockquote className="md-blockquote">
+                {children}
+              </blockquote>
+            ),
+            code: ({ children, className }) => {
+              const isInline = !className
+              return isInline ? (
+                <code className="md-inline-code">
+                  {children}
+                </code>
+              ) : (
+                <code className={className}>
+                  {children}
+                </code>
+              )
+            },
+            pre: ({ children }) => (
+              <pre className="md-pre">
+                {children}
+              </pre>
+            ),
+            table: ({ children }) => (
+              <table className="md-table">
+                {children}
+              </table>
+            ),
+            th: ({ children }) => (
+              <th className="md-th">
+                {children}
+              </th>
+            ),
+            td: ({ children }) => (
+              <td className="md-td">
+                {children}
+              </td>
+            ),
+            strong: ({ children }) => (
+              <strong className="md-strong">
+                {children}
+              </strong>
+            ),
+            em: ({ children }) => (
+              <em className="md-em">
+                {children}
+              </em>
             )
-          },
-          pre: ({ children }) => (
-            <pre className="md-pre">
-              {children}
-            </pre>
-          ),
-          table: ({ children }) => (
-            <table className="md-table">
-              {children}
-            </table>
-          ),
-          th: ({ children }) => (
-            <th className="md-th">
-              {children}
-            </th>
-          ),
-          td: ({ children }) => (
-            <td className="md-td">
-              {children}
-            </td>
-          ),
-          strong: ({ children }) => (
-            <strong className="md-strong">
-              {children}
-            </strong>
-          ),
-          em: ({ children }) => (
-            <em className="md-em">
-              {children}
-            </em>
-          )
-        }}
-      >
-        {content}
-      </ReactMarkdown>
+          }}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
 
       <style jsx>{`
+        .markdown-scroll-container {
+          overflow-y: auto;
+          overflow-x: hidden;
+          border: 1px solid var(--border-color, #e0e0e0);
+          border-radius: 12px;
+          background: var(--card-background, #ffffff);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          position: relative;
+        }
+
+        .markdown-scroll-container::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .markdown-scroll-container::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 4px;
+        }
+
+        .markdown-scroll-container::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, var(--primary-color, #667eea), var(--secondary-color, #764ba2));
+          border-radius: 4px;
+          transition: all 0.3s ease;
+        }
+
+        .markdown-scroll-container::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, var(--secondary-color, #764ba2), var(--primary-color, #667eea));
+          transform: scale(1.1);
+        }
+
         .markdown-wrapper {
           font-family: var(--font-family-base);
           line-height: 1.7;
           color: var(--foreground);
+          padding: 24px;
         }
         
         :global(.markdown-content-enhanced) {
@@ -293,6 +337,14 @@ export default ({ content }: { content: string }) => {
         
         /* Responsive design */
         @media (max-width: 768px) {
+          .markdown-scroll-container {
+            border-radius: 8px;
+          }
+
+          .markdown-wrapper {
+            padding: 16px;
+          }
+
           :global(.md-h1) {
             font-size: 24px;
             margin: 24px 0 20px 0;

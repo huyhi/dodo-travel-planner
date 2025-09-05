@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export DASHSCOPE_API_KEY="sk-065440f2b80841dfaf247630120460ac"
-
 # if .venv exists, use that env
 if [ -d ".venv" ]; then
     source .venv/bin/activate

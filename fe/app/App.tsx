@@ -1,16 +1,13 @@
 'use client'
 
 import React, { useRef, useState, useEffect } from 'react'
-import { Card, Spin, Alert, Typography } from 'antd'
+import { Card, Spin, Alert } from 'antd'
 import Banner from './components/Banner'
 import TravelForm from './components/TravelForm'
 import MarkdownContent from './components/MarkdownContent'
 import { TravelRequest } from './models/http-model'
 import { sseService } from './services/sseService'
-import { processStreamingText } from './utils/textUtils'
 import dayjs from 'dayjs'
-
-const { Title } = Typography
 
 interface FormData {
   startLocation: string
@@ -66,13 +63,12 @@ export default () => {
       }
     }, 100)
 
-    // 根据选择使用不同的 SSE 方案
     try {
       sseService.streamTravelPlanWithEventSource(
         requestData,
         (chunk: string) => {
           // 使用高级文本处理功能
-          setTravelPlan(prev => processStreamingText(chunk, prev))
+          setTravelPlan(prev => `${prev}${chunk}`)
         },
         () => {
           setIsLoading(false)
@@ -101,12 +97,6 @@ export default () => {
             <Card className="result-card" styles={{ body: { padding: '48px' } }}>
               <div className="result-header">
                 <div className="result-icon">🗺️</div>
-                <Title level={2} className="result-title">
-                  您的专属旅行计划
-                </Title>
-                <p className="result-description">
-                  AI 为您精心制定的个性化旅行方案
-                </p>
               </div>
 
               {error && (
@@ -181,12 +171,12 @@ export default () => {
         
         .result-header {
           text-align: center;
-          margin-bottom: 32px;
+          margin-bottom: 1rem;
         }
         
         .result-icon {
           font-size: 48px;
-          margin-bottom: 16px;
+          margin-bottom: 1rem;
           display: inline-block;
           animation: bounce 2s ease-in-out infinite;
         }
@@ -203,7 +193,7 @@ export default () => {
         .result-description {
           color: #666;
           font-size: 16px;
-          margin: 16px 0 0 0;
+          margin: 1rem 0 0 0;
           line-height: 1.6;
         }
         
@@ -214,7 +204,7 @@ export default () => {
         
         .loading-container {
           text-align: center;
-          padding: 60px 0;
+          padding: 1rem 0;
         }
         
         .loading-animation {
@@ -312,7 +302,7 @@ export default () => {
           }
           
           .loading-container {
-            padding: 40px 0;
+            padding: 1rem 0;
           }
           
           .loading-steps {
