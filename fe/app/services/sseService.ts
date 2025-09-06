@@ -17,6 +17,7 @@ export class SSEService {
   streamTravelPlanWithEventSource(
     request: TravelRequest,
     onChunk: (chunk: { text: string; sseDataType: SSEDataType }) => void,
+    onChatComplete: () => void,
     onComplete: () => void,
     onError: (error: Error) => void
   ): void {
@@ -44,6 +45,9 @@ export class SSEService {
           console.log('✅ Stream completed')
           this.closeConnection()
           onComplete()
+        } else if (event.data.startsWith('[CHAT_DONE]')) {
+          console.log('✅ Chat completed')
+          onChatComplete()
         } else if (event.data.startsWith('[ERROR]')) {
           console.error('❌ Stream error:', event.data)
           this.closeConnection()

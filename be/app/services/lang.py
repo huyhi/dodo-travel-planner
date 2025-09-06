@@ -99,6 +99,8 @@ class LangChainService:
 
             logger.info(f"travel_plan_all_ai_resp: {chat_all_content}")
 
+            yield "data: [CHAT_DONE]\n\n"
+
             # wait chat message done, 用上面的结果调用 MCP
             async for chunk in lang_graph_map_vis_chat(
                 MAP_VIS_PROMPT.format(input=chat_all_content, destination=params.to_place),

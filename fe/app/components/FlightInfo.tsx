@@ -267,7 +267,7 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
         }
 
         .flights-list {
-          max-height: 600px;
+          max-height: 500px;
           overflow-y: auto;
           padding-right: 8px;
         }
@@ -486,10 +486,6 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
 
           .airport-info {
             flex: none;
-          }
-
-          .flights-list {
-            max-height: 500px;
           }
 
           .flight-item {
