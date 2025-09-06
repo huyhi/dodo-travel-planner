@@ -1,0 +1,139 @@
+{
+    "code": 0,
+    "message": "",
+    "data": [
+        {
+            "outbound": {
+                "departure_airport": {
+                    "code": "PKX",
+                    "name": "北京大兴国际机场",
+                    "city": "北京"
+                },
+                "arrival_airport": {
+                    "code": "SHA",
+                    "name": "上海虹桥国际机场",
+                    "city": "上海"
+                },
+                "departure_time": "2025-09-15T20:05:00",
+                "arrival_time": "2025-09-15T22:10:00",
+                "duration": 7500
+            },
+            "return": {
+                "departure_airport": {
+                    "code": "SHA",
+                    "name": "上海虹桥国际机场",
+                    "city": "上海"
+                },
+                "arrival_airport": {
+                    "code": "PKX",
+                    "name": "北京大兴国际机场",
+                    "city": "北京"
+                },
+                "departure_time": "2025-09-20T16:45:00",
+                "arrival_time": "2025-09-20T19:00:00",
+                "duration": 8100
+            },
+            "airline": {
+                "name": "",
+                "code": "",
+                "logo": ""
+            },
+            "price": {
+                "total": 1566.6599999999999,
+                "currency": "CNY",
+                "base_fare": 1485.99,
+                "tax": 134.99
+            },
+            "stops": 0
+        },
+        {
+            "outbound": {
+                "departure_airport": {
+                    "code": "PKX",
+                    "name": "北京大兴国际机场",
+                    "city": "北京"
+                },
+                "arrival_airport": {
+                    "code": "PVG",
+                    "name": "上海浦东国际机场",
+                    "city": "上海"
+                },
+                "departure_time": "2025-09-15T14:25:00",
+                "arrival_time": "2025-09-15T16:40:00",
+                "duration": 8100
+            },
+            "return": {
+                "departure_airport": {
+                    "code": "SHA",
+                    "name": "上海虹桥国际机场",
+                    "city": "上海"
+                },
+                "arrival_airport": {
+                    "code": "PKX",
+                    "name": "北京大兴国际机场",
+                    "city": "北京"
+                },
+                "departure_time": "2025-09-20T16:45:00",
+                "arrival_time": "2025-09-20T19:00:00",
+                "duration": 8100
+            },
+            "airline": {
+                "name": "",
+                "code": "",
+                "logo": ""
+            },
+            "price": {
+                "total": 1861.84,
+                "currency": "CNY",
+                "base_fare": 1789.82,
+                "tax": 135.0
+            },
+            "stops": 0,
+            "token": "d6a1f_H4sIAAAAAAAA_y2Qb2-qMBSHP42-o7QFQZc0Nw7YdANU_ujmmwZLVdQNQ3vvwE9_T2Bpc57feZo0pz1rfVdPpnm8VaezVoY4o1Ot61OhJRL1l3lsoBzq-lp9n8yiaszntzRdzMkkDdYUQzGJacAST59_ZHGvUIOOLPjIgiSehzxLlmu-TpbeMn4dy1YbqhFsXB0kKpRgJP2NDXOQY69iL9lMeyVqzWzk7P0oDULvjQyyYQvHWfqbvitZ5P20q8dcRb7OMl-12UV10UPR3TWJc7yNYlx3q46kefXTxlcSh35AsxyrKCv9vAOH4wyctSGR2t5u75Bx_vLpRpct-JyE_ss-9HD3Sxz6cxVmwcjy-wGkgBcgZLuzYby6UMwektCM4iGWmmV0Er_OhhYOiEOsvmkZsRw6Q8TGdDpW8iaFrurvd9mxxYrQydSAX5Z3OjF2vBeWAT_ei_2IemRq_ytnDqSRNYd94hhh4BlIgAVfEZR8QDpw1wEI7j4DSk5L2gvJ3ZkQEI7chVpxgoYrLny5Azz49K-0v8r_TurpyyQCAAA."
+        },
+        {
+            "outbound": {
+                "departure_airport": {
+                    "code": "PKX",
+                    "name": "北京大兴国际机场",
+                    "city": "北京"
+                },
+                "arrival_airport": {
+                    "code": "PVG",
+                    "name": "上海浦东国际机场",
+                    "city": "上海"
+                },
+                "departure_time": "2025-09-15T17:30:00",
+                "arrival_time": "2025-09-15T19:35:00",
+                "duration": 7500
+            },
+            "return": {
+                "departure_airport": {
+                    "code": "SHA",
+                    "name": "上海虹桥国际机场",
+                    "city": "上海"
+                },
+                "arrival_airport": {
+                    "code": "PKX",
+                    "name": "北京大兴国际机场",
+                    "city": "北京"
+                },
+                "departure_time": "2025-09-20T16:45:00",
+                "arrival_time": "2025-09-20T19:00:00",
+                "duration": 8100
+            },
+            "airline": {
+                "name": "",
+                "code": "",
+                "logo": ""
+            },
+            "price": {
+                "total": 2783.06,
+                "currency": "CNY",
+                "base_fare": 2658.25,
+                "tax": 116.86
+            },
+            "stops": 0
+        }
+    ]
+}

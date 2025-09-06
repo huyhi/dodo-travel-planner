@@ -2,10 +2,15 @@
 Travel Chat API Router
 """
 
-from fastapi import APIRouter, Query
+import asyncio
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from app.promopt.travel_plan import TRAVEL_PLAN_PROMPT
+from app.services.flight import fetch_flight_info
 from app.services.lang import lang_chain_service
+from app.models.http_entity import BaseHttpResponse, TravelPlanRequest
+from app.services.city import get_city_code
+
 
 router = APIRouter(
     prefix="/travel",
@@ -13,21 +18,14 @@ router = APIRouter(
 )
 
 @router.get("/chat")
-async def travel_chat(
-    from_place: str = Query(..., description="出发地点"),
-    to_place: str = Query(..., description="目的地"),
-    from_date: str = Query(..., description="出发日期"),
-    to_date: str = Query(..., description="返回日期"),
-    people_num: int = Query(..., description="人数"),
-    others: str = Query("", description="其他要求")
-):
+async def travel_chat(params: TravelPlanRequest = Depends()):
     prompt = TRAVEL_PLAN_PROMPT.format(
-        from_place=from_place,
-        to_place=to_place,
-        from_date=from_date,
-        to_date=to_date,
-        people_num=people_num,
-        others=others
+        from_place=params.from_place,
+        to_place=params.to_place,
+        from_date=params.from_date,
+        to_date=params.to_date,
+        people_num=params.people_num,
+        others=params.others
     )
 
     """Stream chat response for travel planning"""
@@ -41,4 +39,28 @@ async def travel_chat(
             "Access-Control-Allow-Headers": "Cache-Control",
             "X-Accel-Buffering": "no"  # 禁用nginx缓冲
         }
+    )
+
+@router.get("/flight-search")
+async def flight_search(params: TravelPlanRequest = Depends()):
+    # 并发请求两个城市代码
+    from_place, to_place = await asyncio.gather(
+        get_city_code(params.from_place),
+        get_city_code(params.to_place)
+    )
+
+    if not from_place or not to_place:
+        return BaseHttpResponse(
+            code=400,
+            message="Invalid city code",
+        )
+
+    flight_info = fetch_flight_info(
+        from_place, 
+        to_place,
+        params.from_date,
+        params.to_date
+    )
+    return BaseHttpResponse(
+        data=flight_info
     )

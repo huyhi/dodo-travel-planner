@@ -9,6 +9,10 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import travel
+from app.config import setup_logging
+
+# Initialize logging
+setup_logging()
 
 
 # Create FastAPI app instance

@@ -1,4 +1,4 @@
-import { TravelRequest } from '../models/http-model'
+import { TravelRequest, FlightSearchResponse } from '../models/http-model'
 
 export class TravelApiService {
   private baseUrl = 'http://localhost:8000/api/v1'
@@ -117,6 +117,35 @@ export class TravelApiService {
     }
 
     return 'continue'
+  }
+
+  async searchFlights(request: TravelRequest): Promise<FlightSearchResponse> {
+    try {
+      const params = new URLSearchParams({
+        from_place: request.from_place,
+        to_place: request.to_place,
+        from_date: request.from_date,
+        to_date: request.to_date,
+        people_num: request.people_num.toString(),
+        others: request.others
+      })
+
+      const response = await fetch(`${this.baseUrl}/travel/flight-search/?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: FlightSearchResponse = await response.json()
+      return data
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Unknown error occurred')
+    }
   }
 }
 

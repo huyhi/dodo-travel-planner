@@ -1,9 +1,10 @@
+from typing import Any
 from pydantic import BaseModel
 
 #
 # Http Request entities
 #
-class TravelChatRequest(BaseModel):
+class TravelPlanRequest(BaseModel):
     from_place: str
     to_place: str
     from_date: str
@@ -14,3 +15,7 @@ class TravelChatRequest(BaseModel):
 #
 # Http Response entities
 #
+class BaseHttpResponse(BaseModel):
+    code: int = 0
+    message: str = ""
+    data: Any = None

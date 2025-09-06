@@ -1,14 +1,17 @@
 from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 import json
+import logging
 
 from app.config import ModelConfig
+
+logger = logging.getLogger(__name__)
 
 
 class LangChainService:
     def __init__(self):
-
-        print(f"ModelConfig: {ModelConfig.api_key}")
+        logger.info(f"Initializing LangChainService with model: {ModelConfig.model_name}")
+        logger.debug(f"ModelConfig API key configured: {bool(ModelConfig.api_key)}")
 
         self.model = ChatOpenAI(
             model=ModelConfig.model_name,

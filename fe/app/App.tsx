@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useRef, useState, useEffect } from 'react'
-import { Card, Spin, Alert } from 'antd'
+import { Card, Spin, Alert, Row, Col } from 'antd'
 import Banner from './components/Banner'
 import TravelForm from './components/TravelForm'
 import MarkdownContent from './components/MarkdownContent'
-import { TravelRequest } from './models/http-model'
+import FlightInfo from './components/FlightInfo'
+import { TravelRequest, FlightOption } from './models/http-model'
 import { sseService } from './services/sseService'
+import { travelApiService } from './services/travelApi'
 import dayjs from 'dayjs'
 
 interface FormData {
@@ -23,6 +25,11 @@ export default () => {
   const [travelPlan, setTravelPlan] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  // 航班相关状态
+  const [flights, setFlights] = useState<FlightOption[]>([])
+  const [flightLoading, setFlightLoading] = useState(false)
+  const [flightError, setFlightError] = useState<string | null>(null)
+
   // 组件卸载时关闭 EventSource 连接
   useEffect(() => {
     return () => {
@@ -35,6 +42,9 @@ export default () => {
     setIsLoading(true)
     setTravelPlan('')
     setError(null)
+    setFlightLoading(true)
+    setFlights([])
+    setFlightError(null)
 
     // 先关闭之前的 EventSource 连接
     sseService.closeConnection()
@@ -63,7 +73,9 @@ export default () => {
       }
     }, 100)
 
+    // 并行执行旅行计划生成和航班搜索
     try {
+      // 启动旅行计划生成
       sseService.streamTravelPlanWithEventSource(
         requestData,
         (chunk: string) => {
@@ -78,9 +90,25 @@ export default () => {
           setIsLoading(false)
         }
       )
+
+      // 并行搜索航班
+      try {
+        const flightResponse = await travelApiService.searchFlights(requestData)
+        if (flightResponse.code === 0) {
+          setFlights(flightResponse.data)
+        } else {
+          setFlightError(flightResponse.message || '航班搜索失败')
+        }
+      } catch (flightErr) {
+        setFlightError(flightErr instanceof Error ? flightErr.message : '航班搜索发生未知错误')
+      } finally {
+        setFlightLoading(false)
+      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : '发生未知错误')
       setIsLoading(false)
+      setFlightLoading(false)
     }
   }
 
@@ -92,49 +120,64 @@ export default () => {
       <main className="main-content">
         <TravelForm onFinish={onFinish} />
 
-        {(isLoading || travelPlan || error) && (
+        {(isLoading || travelPlan || error || flightLoading || flights.length > 0 || flightError) && (
           <div ref={resultRef} className="result-section">
-            <Card className="result-card" styles={{ body: { padding: '48px' } }}>
-              <div className="result-header">
-                <div className="result-icon">🗺️</div>
-              </div>
-
-              {error && (
-                <Alert
-                  message="生成旅行计划时发生错误"
-                  description={error}
-                  type="error"
-                  showIcon
-                  className="error-alert"
-                />
-              )}
-
-              {isLoading && (
-                <div className="loading-container">
-                  <div className="loading-animation">
-                    <Spin size="large" />
+            <Row gutter={[24, 24]}>
+              {/* 左侧：AI建议 */}
+              <Col xs={24} lg={12}>
+                <Card className="result-card" styles={{ body: { padding: '32px' } }}>
+                  <div className="result-header">
+                    <div className="result-icon">🗺️</div>
+                    <div className="result-title">AI 旅行建议</div>
                   </div>
-                  <div className="loading-text">
-                    正在为您生成专属旅行计划，请稍候...
-                    <span className="typing-cursor">|</span>
-                  </div>
-                  <div className="loading-steps">
-                    <div className="step active">🔍 分析您的需求</div>
-                    <div className="step active">🌍 搜索最佳路线</div>
-                    <div className="step active">✨ 生成个性化方案</div>
-                  </div>
-                </div>
-              )}
 
-              {travelPlan && (
-                <div className="travel-plan-content">
-                  <MarkdownContent content={travelPlan} />
-                  {isLoading && (
-                    <div className="streaming-cursor" />
+                  {error && (
+                    <Alert
+                      message="生成旅行计划时发生错误"
+                      description={error}
+                      type="error"
+                      showIcon
+                      className="error-alert"
+                    />
                   )}
-                </div>
-              )}
-            </Card>
+
+                  {isLoading && (
+                    <div className="loading-container">
+                      <div className="loading-animation">
+                        <Spin size="large" />
+                      </div>
+                      <div className="loading-text">
+                        正在为您生成专属旅行计划，请稍候...
+                        <span className="typing-cursor">|</span>
+                      </div>
+                      <div className="loading-steps">
+                        <div className="step active">🔍 分析您的需求</div>
+                        <div className="step active">🌍 搜索最佳路线</div>
+                        <div className="step active">✨ 生成个性化方案</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {travelPlan && (
+                    <div className="travel-plan-content">
+                      <MarkdownContent content={travelPlan} />
+                      {isLoading && (
+                        <div className="streaming-cursor" />
+                      )}
+                    </div>
+                  )}
+                </Card>
+              </Col>
+
+              {/* 右侧：航班信息 */}
+              <Col xs={24} lg={12}>
+                <FlightInfo
+                  flights={flights}
+                  loading={flightLoading}
+                  error={flightError}
+                />
+              </Col>
+            </Row>
           </div>
         )}
       </main>
@@ -151,7 +194,7 @@ export default () => {
         }
         
         .result-section {
-          max-width: 1000px;
+          max-width: 1400px;
           margin: 40px auto 0;
           padding: 0 20px;
         }
@@ -171,12 +214,12 @@ export default () => {
         
         .result-header {
           text-align: center;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
         }
         
         .result-icon {
-          font-size: 48px;
-          margin-bottom: 1rem;
+          font-size: 36px;
+          margin-bottom: 0.5rem;
           display: inline-block;
           animation: bounce 2s ease-in-out infinite;
         }
@@ -188,6 +231,7 @@ export default () => {
           -webkit-text-fill-color: transparent;
           background-clip: text;
           font-weight: 700 !important;
+          font-size: 20px;
         }
         
         .result-description {
@@ -253,11 +297,31 @@ export default () => {
         
         .travel-plan-content {
           background: var(--card-background);
-          padding: 32px;
+          padding: 24px;
           border-radius: 12px;
           border: 1px solid var(--border-color);
           box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
           position: relative;
+          max-height: 600px;
+          overflow-y: auto;
+        }
+
+        .travel-plan-content::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .travel-plan-content::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 3px;
+        }
+
+        .travel-plan-content::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 3px;
+        }
+
+        .travel-plan-content::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
         }
         
         .streaming-cursor {
