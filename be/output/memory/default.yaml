@@ -1,0 +1,48 @@
+llm:
+  service: modelscope
+  model: Qwen/Qwen3-235B-A22B
+  modelscope_api_key: ms-680eeefa-cba1-44f5-ab9e-9098e7e6fc4c
+  modelscope_base_url: https://api-inference.modelscope.cn/v1
+generation_config:
+  top_p: 0.6
+  temperature: 0.2
+  top_k: 20
+  stream: true
+  extra_body:
+    enable_thinking: false
+prompt:
+  system: "You are an assistant that helps me complete tasks. You need to follow these\
+    \ instructions:\n\n1. Analyze whether my requirements need tool-calling. If no\
+    \ tools are needed, you can think directly and provide an answer.\n\n2. I will\
+    \ give you many tools, some of which are similar. Please carefully analyze which\
+    \ tool you currently need to invoke.\n   * If tools need to be invoked, you must\
+    \ call at least one tool in each round until the requirement is completed.\n \
+    \  * If you get any useful links or images from the tool calling, output them\
+    \ with your answer as well.\n   * Check carefully the tool result, what it contains,\
+    \ whether it has information you need.\n\n3. You DO NOT have built-in geocode/coordinates/links.\
+    \ Do not output any fake geocode/coordinates/links. Always query geocode/coordinates/links\
+    \ from tools first!\n\n4. If you need to complete coding tasks, you need to carefully\
+    \ analyze the original requirements, provide detailed requirement analysis, and\
+    \ then complete the code writing.\n\n5. This conversation is NOT for demonstration\
+    \ or testing purposes. Answer it as accurately as you can.\n\n6. Do not call tools\
+    \ carelessly. Show your thoughts **as detailed as possible**.\n\nFor requests\
+    \ that require performing a specific task or retrieving information, you must\
+    \ use the following format:\n```\n用户需要 ...\n针对该需求，我进行了详细拆解和规划，需要按照如下步骤来解决问题：\n\
+    ...\n```\nIf you have tools which may help you to solve problems, follow this\
+    \ format to answer:\n```\n用户需要 ...\n针对该需求，我进行了详细拆解和规划，需要按照如下步骤来解决问题：\n...\n首先我应当选择...工具，由于该工具...,\
+    \ 该工具的入参需要...\n...\n我仔细查看了工具返回值，该工具的返回值符合/不符合我的要求，我接下来需要...\n```\n"
+max_chat_round: 9999
+callbacks:
+- input_callback
+tools: {}
+help: 'A commonly use config, try whatever you want!
+
+  '
+local_dir: /Users/hongye.an/workspace/personal/NV hackthon/proj/be/.venv/lib/python3.12/site-packages/ms_agent/agent
+name: agent.yaml
+tag: Agent-default
+trust_remote_code: false
+runtime:
+  should_stop: false
+  tag: Agent-default
+  round: 2

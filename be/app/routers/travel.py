@@ -30,7 +30,7 @@ async def travel_chat(params: TravelPlanRequest = Depends()):
 
     """Stream chat response for travel planning"""
     return StreamingResponse(
-        lang_chain_service.streaming_chat(prompt),
+        lang_chain_service.streaming_chat(params, prompt),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -43,6 +43,11 @@ async def travel_chat(params: TravelPlanRequest = Depends()):
 
 @router.get("/flight-search")
 async def flight_search(params: TravelPlanRequest = Depends()):
+    if True:
+        return BaseHttpResponse(
+            data=[]
+        )
+    
     # 并发请求两个城市代码
     from_place, to_place = await asyncio.gather(
         get_city_code(params.from_place),

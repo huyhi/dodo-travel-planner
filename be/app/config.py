@@ -25,4 +25,4 @@ class ModelConfig:
     api_key = os.getenv("DASHSCOPE_API_KEY")
     base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     temperature = 0.7
-    max_tokens = 4096
+    max_tokens = 2048

@@ -1,5 +1,6 @@
 import { TravelRequest } from '../models/http-model'
 import { processSseDataChunk } from '../utils/textUtils'
+import { SSEDataType } from '../models/constant'
 
 /**
  * 纯 EventSource 实现的 SSE 服务
@@ -15,7 +16,7 @@ export class SSEService {
    */
   streamTravelPlanWithEventSource(
     request: TravelRequest,
-    onChunk: (chunk: string) => void,
+    onChunk: (chunk: { text: string; sseDataType: SSEDataType }) => void,
     onComplete: () => void,
     onError: (error: Error) => void
   ): void {
@@ -49,7 +50,7 @@ export class SSEService {
           onError(new Error(event.data.substring(7).trim()))
         } else {
           // 使用工具函数处理 SSE 数据块
-          const processedData = processSseDataChunk(event.data)
+          const processedData = processSseDataChunk(event.data) as { text: string; sseDataType: SSEDataType }
           onChunk(processedData)
         }
       }
@@ -90,37 +91,5 @@ export class SSEService {
   }
 }
 
-/**
- * 简化的 EventSource 使用示例
- * 完全类似于你提供的代码结构
- */
-export function createSimpleSSEConnection(
-  url: string,
-  onMessage: (data: string) => void,
-  onComplete: () => void = () => { },
-  onError: (error: Error) => void = console.error
-): EventSource {
-  const eventSource = new EventSource(url)
-
-  // 你的示例代码逻辑
-  eventSource.onmessage = (event) => {
-    if (event.data === "[DONE]") {
-      eventSource.close()
-      onComplete()
-    } else {
-      // 使用工具函数处理数据
-      const processedData = processSseDataChunk(event.data)
-      onMessage(processedData)
-    }
-  }
-
-  eventSource.onerror = (event) => {
-    console.error('SSE Error:', event)
-    eventSource.close()
-    onError(new Error('SSE connection failed'))
-  }
-
-  return eventSource
-}
 
 export const sseService = new SSEService()

@@ -10,6 +10,7 @@ import { TravelRequest, FlightOption } from './models/http-model'
 import { sseService } from './services/sseService'
 import { travelApiService } from './services/travelApi'
 import dayjs from 'dayjs'
+import { SSEDataType } from './models/constant'
 
 interface FormData {
   startLocation: string
@@ -23,6 +24,8 @@ export default () => {
   const resultRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [travelPlan, setTravelPlan] = useState('')
+  const [mapVis, setMapVis] = useState('')
+
   const [error, setError] = useState<string | null>(null)
 
   // 航班相关状态
@@ -78,9 +81,17 @@ export default () => {
       // 启动旅行计划生成
       sseService.streamTravelPlanWithEventSource(
         requestData,
-        (chunk: string) => {
+        (chunk: { text: string; sseDataType: SSEDataType }) => {
           // 使用高级文本处理功能
-          setTravelPlan(prev => `${prev}${chunk}`)
+          setTravelPlan(prev => `${prev}${chunk.text}`)
+          switch (chunk.sseDataType) {
+            case SSEDataType.CHAT_TEXT:
+              setTravelPlan(prev => `${prev}${chunk.text}`)
+              break
+            case SSEDataType.MAP_VIS:
+              setMapVis(prev => `${prev}${chunk.text}`)
+              break
+          }
         },
         () => {
           setIsLoading(false)

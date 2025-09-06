@@ -21,6 +21,9 @@ dependencies = [
     "langchain-openai>=0.2.0",
     "requests>=2.31.0",
     "json-repair>=0.50.0",
+    "ms-agent>=1.2.0",
+    "langchain-mcp-adapters>=0.1.9",
+    "langgraph>=0.2.76",
 ]
 
 [project.optional-dependencies]

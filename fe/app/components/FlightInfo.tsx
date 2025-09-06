@@ -33,6 +33,13 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
     return `¥${price.toFixed(0)}`
   }
 
+  // 处理航班卡片点击事件，跳转到 Trip.com 航班状态页面
+  const handleFlightClick = (flight: FlightOption) => {
+    const flightNumber = `${flight.airline.code}${flight.airline.flight_no}`
+    const tripUrl = `https://www.trip.com/flights/status-${flightNumber}/`
+    window.open(tripUrl, '_blank')
+  }
+
   if (loading) {
     return (
       <Card className="flight-info-card">
@@ -119,7 +126,11 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
     >
       <div className="flights-list">
         {flights.map((flight, index) => (
-          <div key={index} className="flight-item">
+          <div
+            key={index}
+            className="flight-item"
+            onClick={() => handleFlightClick(flight)}
+          >
             <div className="flight-content">
               {/* 去程航班 */}
               <div className="flight-segment">
@@ -226,6 +237,11 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
                     基础票价: {formatPrice(flight.price.base_fare)} + 税费: {formatPrice(flight.price.tax)}
                   </Text>
                 </div>
+                <div className="click-hint">
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    点击查看详细航班信息 →
+                  </Text>
+                </div>
               </div>
             </div>
           </div>
@@ -281,11 +297,19 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
           border-radius: 12px;
           border: 1px solid #e6f0ff;
           transition: all 0.3s ease;
+          cursor: pointer;
+          position: relative;
         }
 
         .flight-item:hover {
           box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
           border-color: #667eea;
+          transform: translateY(-2px);
+          background: #f0f4ff;
+        }
+
+        .flight-item:active {
+          transform: translateY(0);
         }
 
         .flight-item:last-child {
@@ -435,6 +459,17 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
 
         .price-details {
           font-size: 12px;
+        }
+
+        .click-hint {
+          margin-top: 8px;
+          text-align: center;
+          opacity: 0.7;
+          transition: opacity 0.3s ease;
+        }
+
+        .flight-item:hover .click-hint {
+          opacity: 1;
         }
 
         @media (max-width: 768px) {
