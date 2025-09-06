@@ -36,7 +36,7 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
   // 处理航班卡片点击事件，跳转到 Trip.com 航班状态页面
   const handleFlightClick = (flight: FlightOption) => {
     const flightNumber = `${flight.airline.code}${flight.airline.flight_no}`
-    const tripUrl = `https://www.trip.com/flights/status-${flightNumber}/`
+    const tripUrl = `https://www.trip.com/flights/status-${flightNumber}/?locale=zh_hk`
     window.open(tripUrl, '_blank')
   }
 

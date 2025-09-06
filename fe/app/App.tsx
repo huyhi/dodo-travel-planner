@@ -6,6 +6,7 @@ import Banner from './components/Banner'
 import TravelForm from './components/TravelForm'
 import MarkdownContent from './components/MarkdownContent'
 import FlightInfo from './components/FlightInfo'
+import Footer from './components/Footer'
 import { TravelRequest, FlightOption } from './models/http-model'
 import { sseService } from './services/sseService'
 import { travelApiService } from './services/travelApi'
@@ -140,10 +141,10 @@ export default () => {
 
         {(isChatLoading || travelPlan || error || flightLoading || flights.length > 0 || flightError || isMapVisLoading || mapVis) && (
           <div ref={resultRef} className="result-section">
-            <Row gutter={[24, 24]}>
+            <Row gutter={[24, 24]} className="equal-height-row">
               {/* 左侧：AI建议 */}
-              <Col xs={24} lg={12}>
-                <Card className="result-card" styles={{ body: { padding: '0.5rem', maxHeight: '1200px' } }}>
+              <Col xs={24} lg={12} className="left-column">
+                <Card className="result-card left-card" styles={{ body: { padding: '0.5rem' } }}>
                   <div className="result-header">
                     <div className="result-icon">🗺️</div>
                     <div className="result-title">AI 旅行建议</div>
@@ -178,7 +179,7 @@ export default () => {
 
                   {travelPlan && (
                     <div className="travel-plan-content">
-                      <MarkdownContent content={travelPlan} />
+                      <MarkdownContent content={travelPlan} height={900} />
                       {isChatLoading && (
                         <div className="streaming-cursor" />
                       )}
@@ -188,8 +189,8 @@ export default () => {
               </Col>
 
               {/* 右侧：航班信息和地图可视化 */}
-              <Col xs={24} lg={12}>
-                <div className="right-column">
+              <Col xs={24} lg={12} className="right-column">
+                <div className="right-column-content">
                   {/* 航班信息 */}
                   <div className="flight-section">
                     <FlightInfo
@@ -207,7 +208,7 @@ export default () => {
                           <div className="result-title">地图可视化</div>
                         </div>
 
-                        {isChatLoading && (
+                        {isMapVisLoading && (
                           <div className="loading-container">
                             <div className="loading-animation">
                               <Spin size="large" />
@@ -220,7 +221,7 @@ export default () => {
                         )}
 
                         <div className="map-vis-content">
-                          <MarkdownContent content={mapVis} />
+                          <MarkdownContent content={mapVis} height={400} />
                           {isMapVisLoading && (
                             <div className="streaming-cursor" />
                           )}
@@ -230,10 +231,13 @@ export default () => {
                   )}
                 </div>
               </Col>
+
             </Row>
           </div>
         )}
       </main>
+
+      <Footer />
 
       <style jsx>{`
         .app-container {
@@ -242,7 +246,7 @@ export default () => {
         }
         
         .main-content {
-          padding: 1rem 0 1rem 0;
+          padding: 1rem 0 4rem 0;
           background: var(--background);
         }
         
@@ -264,8 +268,31 @@ export default () => {
         .result-card:hover {
           box-shadow: 0 12px 48px rgba(102, 126, 234, 0.12) !important;
         }
-        
+
+        .equal-height-row {
+          display: flex !important;
+          align-items: stretch;
+        }
+
+        .left-column,
         .right-column {
+          display: flex !important;
+          flex-direction: column;
+        }
+
+        .left-card {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .left-card :global(.ant-card-body) {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .right-column-content {
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -375,10 +402,14 @@ export default () => {
         }
 
         .travel-plan-content {
-          height: 1000px;
+          flex: 1;
+          min-height: 400px;
+          max-height: calc(100vh - 400px);
         }
 
         .map-vis-content {
+          flex: 1;
+          min-height: 200px;
           max-height: 500px;
         }
 
@@ -440,6 +471,20 @@ export default () => {
             margin-top: 24px;
             padding: 0 16px;
           }
+
+          .equal-height-row {
+            flex-direction: column !important;
+            align-items: normal !important;
+          }
+
+          .left-column,
+          .right-column {
+            flex-direction: column !important;
+          }
+
+          .left-card {
+            height: auto !important;
+          }
           
           .result-icon {
             font-size: 36px;
@@ -458,9 +503,14 @@ export default () => {
           .travel-plan-content,
           .map-vis-content {
             padding: 1rem;
+            max-height: 400px;
+          }
+
+          .travel-plan-content {
+            min-height: 300px;
           }
           
-          .right-column {
+          .right-column-content {
             gap: 16px;
           }
         }

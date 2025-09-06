@@ -3,20 +3,16 @@ import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
 
 interface MarkdownContentProps {
-  content: string;
-  height?: string | number;
-  className?: string;
+  content: string
+  height?: string | number
 }
 
-export default ({ content, height = 600, className = '' }: MarkdownContentProps) => {
+export default ({ content, height }: MarkdownContentProps) => {
   const containerHeight = typeof height === 'number' ? `${height}px` : height;
 
   return (
-    <div
-      className={`markdown-scroll-container ${className}`}
-      style={{ height: containerHeight }}
-    >
-      <div className="markdown-wrapper markdown-content-enhanced">
+    <>
+      <div className="markdown-wrapper markdown-content-enhanced" style={{ height: containerHeight }}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeHighlight]}
@@ -386,6 +382,6 @@ export default ({ content, height = 600, className = '' }: MarkdownContentProps)
           }
         }
       `}</style>
-    </div>
+    </>
   )
 }
