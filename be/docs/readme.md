@@ -1,5 +1,17 @@
 # 🦤 Dodo 旅行规划助手
 
+## 📁 后端项目结构
+```
+proj/
+├── 📁 be/                    # 后端服务
+│   ├── 📁 app/
+│   │   ├── 📁 models/        # 数据模型
+│   │   ├── 📁 routers/       # API 路由
+│   │   ├── 📁 services/      # 业务逻辑
+│   │   └── 📁 promopt/       # AI 提示词模板
+└── └── 📄 pyproject.toml     # Python 依赖配置
+```
+
 ## Backend Setup
 
 ### A. 安装 UV 工具
