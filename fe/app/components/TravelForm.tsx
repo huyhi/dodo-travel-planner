@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { TravelRequest } from '../models/http-model'
-import styles from './TravelForm.module.css'
+import styles from '../styling/TravelForm.module.css'
 
 const { Title } = Typography
 const { TextArea } = Input

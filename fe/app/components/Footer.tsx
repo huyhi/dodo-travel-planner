@@ -39,7 +39,7 @@ const Footer: React.FC = () => {
 
       <div className="footer-bottom">
         <div className="footer-copyright">
-          © 2024 Dodo Travel Planner. Made with ❤️ for travelers.
+          © 2025 Dodo Travel Planner
         </div>
       </div>
 
