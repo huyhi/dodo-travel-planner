@@ -267,7 +267,7 @@ export default function FlightInfo({ flights, loading, error }: FlightInfoProps)
         }
 
         .flights-list {
-          max-height: 500px;
+          max-height: 250px;
           overflow-y: auto;
           padding-right: 8px;
         }
