@@ -140,11 +140,11 @@ export default () => {
         <TravelForm onFinish={onFinish} />
 
         {(isChatLoading || travelPlan || error || flightLoading || flights.length > 0 || flightError || isMapVisLoading || mapVis) && (
-          <div ref={resultRef} className="result-section">
-            <Row gutter={[24, 24]} className="equal-height-row">
-              {/* 左侧：AI建议 */}
-              <Col xs={24} lg={12} className="left-column">
-                <Card className="result-card left-card" styles={{ body: { padding: '0.5rem' } }}>
+          <div ref={resultRef} className="result-section" style={{ width: '75%'}}>
+            <div className="single-column-layout">
+              {/* AI 旅行建议 */}
+              <div className="section-block">
+                <Card className="result-card" styles={{ body: { padding: '0.5rem' } }}>
                   <div className="result-header">
                     <div className="result-icon">🗺️</div>
                     <div className="result-title">AI 旅行建议</div>
@@ -179,60 +179,111 @@ export default () => {
 
                   {travelPlan && (
                     <div className="travel-plan-content">
-                      <MarkdownContent content={travelPlan} height={900} />
+                      <MarkdownContent content={travelPlan} />
                       {isChatLoading && (
                         <div className="streaming-cursor" />
                       )}
                     </div>
                   )}
                 </Card>
-              </Col>
+              </div>
 
-              {/* 右侧：航班信息和地图可视化 */}
-              <Col xs={24} lg={12} className="right-column">
-                <div className="right-column-content">
-                  {/* 航班信息 */}
-                  <div className="flight-section">
-                    <FlightInfo
-                      flights={flights}
-                      loading={flightLoading}
-                      error={flightError}
-                    />
+              {/* 航班信息 */}
+              <div className="section-block">
+                <FlightInfo
+                  flights={flights}
+                  loading={flightLoading}
+                  error={flightError}
+                />
+              </div>
+
+              {/* 地图可视化模块 */}
+              <div className="section-block">
+                <Card className="result-card" styles={{ body: { padding: '32px' } }}>
+                  <div className="result-header">
+                    <div className="result-title">地图可视化</div>
                   </div>
 
-                  {/* 地图可视化模块 */}
-                  {(isMapVisLoading || mapVis) && (
-                    <div className="map-section">
-                      <Card className="result-card" styles={{ body: { padding: '32px' } }}>
-                        <div className="result-header">
-                          <div className="result-title">地图可视化</div>
-                        </div>
-
-                        {isMapVisLoading && (
-                          <div className="loading-container">
-                            <div className="loading-animation">
-                              <Spin size="large" />
-                            </div>
-                            <div className="loading-text">
-                              正在为您生成旅行地图可视化，请稍候...
-                              <span className="typing-cursor">|</span>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="map-vis-content">
-                          <MarkdownContent content={mapVis} height={400} />
-                          {isMapVisLoading && (
-                            <div className="streaming-cursor" />
-                          )}
-                        </div>
-                      </Card>
+                  {isMapVisLoading && (
+                    <div className="loading-container">
+                      <div className="loading-animation">
+                        <Spin size="large" />
+                      </div>
+                      <div className="loading-text">
+                        正在为您生成旅行地图可视化，请稍候...
+                        <span className="typing-cursor">|</span>
+                      </div>
                     </div>
                   )}
-                </div>
-              </Col>
 
-            </Row>
+                  <div className="map-vis-content">
+                    {mapVis && (
+                      <div className="maps-container">
+                        {/* 解析地图链接并展示 */}
+                        {(() => {
+                          // 简单解析地图链接的函数
+                          const parseMapLinks = (content: string) => {
+                            // 查找所有可能的地图链接格式
+                            const mapLinks: {url: string, title: string}[] = [];
+                            const urlRegex = /\b(https?:\/\/[^\s]+)\b/g;
+                            let match;
+                            let count = 0;
+
+                            while ((match = urlRegex.exec(content)) !== null && count < 3) {
+                              mapLinks.push({
+                                url: match[1],
+                                title: `地图 ${count + 1}`
+                              });
+                              count++;
+                            }
+                            return mapLinks;
+                          };
+
+                          const mapLinks = parseMapLinks(mapVis);
+                          return (
+                            <>{
+                              mapLinks.map((map, index) => (
+                                <div key={index} className={`map-item map-${index + 1}`}>
+                                  {index === 0 ? (
+                                    // 第一个地图直接嵌入显示
+                                    <div className="embedded-map-container">
+                                      <iframe 
+                                        src={map.url}
+                                        title={`地图 ${index + 1}`}
+                                        className="embedded-map"
+                                        width="100%"
+                                        height="400px"
+                                        style={{ border: 0 }}
+                                        allowFullScreen
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                  ) : (
+                                    // 其他地图显示为链接
+                                    <a href={map.url} target="_blank" rel="noopener noreferrer" className="map-link">
+                                      {map.title || `地图 ${index + 1}`}
+                                    </a>
+                                  )}
+                                </div>
+                              ))
+                            }</>
+                          );
+                        })()}
+                      </div>
+                    )}
+                      {isChatLoading && (
+                        <div className="waiting-for-attractions">
+                          <Spin size="small" />
+                          <span>正在等待景点生成...</span>
+                        </div>
+                      )}
+                    {isMapVisLoading && (
+                      <div className="streaming-cursor" />
+                    )}
+                  </div>
+                </Card>
+              </div>
+            </div>
           </div>
         )}
       </main>
@@ -269,42 +320,23 @@ export default () => {
           box-shadow: 0 12px 48px rgba(102, 126, 234, 0.12) !important;
         }
 
-        .equal-height-row {
-          display: flex !important;
-          align-items: stretch;
-        }
-
-        .left-column,
-        .right-column {
-          display: flex !important;
-          flex-direction: column;
-        }
-
-        .left-card {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .left-card :global(.ant-card-body) {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        
-        .right-column-content {
+        .single-column-layout {
           display: flex;
           flex-direction: column;
           gap: 24px;
-          height: 100%;
         }
-        
+
+        .section-block {
+          width: 100%;
+        }
+
         .flight-section {
-          flex: 0 0 auto;
+          width: 100%;
         }
-        
+
         .map-section {
-          flex: 1 1 auto;
+          display: block;
+          min-height: 400px;
         }
         
         .result-header {
@@ -392,6 +424,20 @@ export default () => {
         
         .travel-plan-content,
         .map-vis-content {
+          position: relative;
+        }
+
+        .waiting-for-attractions {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          color: #666;
+          font-size: 14px;
+          gap: 8px;
+          border-top: 1px solid #e6f0ff;
+          margin-top: 16px;
+        }
           background: var(--card-background);
           padding: 24px;
           border-radius: 12px;
@@ -402,15 +448,53 @@ export default () => {
         }
 
         .travel-plan-content {
-          flex: 1;
           min-height: 400px;
-          max-height: calc(100vh - 400px);
         }
 
-        .map-vis-content {
-          flex: 1;
-          min-height: 200px;
-          max-height: 500px;
+        .map-vis-content {          flex: 1;          min-height: 400px;          max-height: 600px;        }
+
+        .maps-container {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .map-item {
+          padding: 12px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.7);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .embedded-map-container {
+          width: 100%;
+          height: 400px;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .embedded-map {
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+
+        .map-link {
+          display: inline-block;
+          padding: 10px 16px;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
+        .map-link:hover {
+          opacity: 0.9;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
         }
 
         .travel-plan-content::-webkit-scrollbar,
@@ -466,24 +550,14 @@ export default () => {
           .main-content {
             padding: 24px 0 60px 0;
           }
-          
+
           .result-section {
             margin-top: 24px;
             padding: 0 16px;
           }
 
-          .equal-height-row {
-            flex-direction: column !important;
-            align-items: normal !important;
-          }
-
-          .left-column,
-          .right-column {
-            flex-direction: column !important;
-          }
-
-          .left-card {
-            height: auto !important;
+          .single-column-layout {
+            gap: 16px;
           }
           
           .result-icon {

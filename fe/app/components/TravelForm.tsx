@@ -102,7 +102,7 @@ export default function TravelForm({ onFinish }: TravelFormProps) {
               >
                 <Input
                   prefix={<EnvironmentOutlined style={{ color: 'var(--primary-color)' }} />}
-                  placeholder="例如：京都"
+                  placeholder="例如：上海"
                   size="large"
                   className={styles.input}
                 />
@@ -151,7 +151,7 @@ export default function TravelForm({ onFinish }: TravelFormProps) {
             className={styles.formItem}
           >
             <TextArea
-              placeholder="请描述您的特殊需求，如：预算范围、兴趣爱好、饮食要求、住宿偏好等..."
+              placeholder="请简要描述您的需求，如：预算范围、兴趣爱好、饮食要求、住宿偏好等..."
               rows={3}
               size="large"
               className={styles.textarea}
